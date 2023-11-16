@@ -13,7 +13,8 @@ def solve_T(nx=100,
             nt=100,
             L=100*m_per_km,
             T_hot=1600,
-            T_ocean=0):
+            T_ocean=0,
+            insulated_lower_bnd=False):
 
     # Define domain and create Temperature array, and set timesteps
     dx = nx/L
@@ -26,12 +27,15 @@ def solve_T(nx=100,
     T[0,:] = T_hot
     # Set boundary conditions
     T[:,0] = T_ocean
-    T[:,-1] = T_hot
+    if not insulated_lower_bnd:
+        T[:,-1] = T_hot
 
     # Solve for temperature in loop
     for n in np.arange(nt-1):
         T[n+1,1:-1] = Fo*T[n,2:] + (1 - 2*Fo)*T[n,1:-1] + Fo*T[n,0:-2]
-
+        if insulated_lower_bnd:
+            T[n+1,-1] = (1-2*Fo)*T[n,-1] + 2*Fo*T[n,-2]
+            
     # Calculate analytical solution
     def T_ana(n):
         j = np.arange(nx)
